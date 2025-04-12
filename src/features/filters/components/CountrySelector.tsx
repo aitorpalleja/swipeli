@@ -1,9 +1,10 @@
 import React from 'react';
-import { StyleSheet, View, Text, Pressable, Image, ScrollView, Modal, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, Pressable, Image, ScrollView, Modal, ActivityIndicator, Platform, Alert } from 'react-native';
 import { Search, X, Check, Globe, ChevronDown } from 'lucide-react-native';
 import { useState, useEffect } from 'react';
 import { fetcher } from '../../../lib/api/client';
 import { StreamingPlatform } from './PlatformSelector';
+import * as Location from 'expo-location';
 
 export interface Country {
   code: string;
@@ -45,14 +46,73 @@ export function CountrySelector({
   const [modalVisible, setModalVisible] = useState(false);
   const [countries, setCountries] = useState<Country[]>([]);
   const [loadingCountries, setLoadingCountries] = useState(false);
+  const [detectingLocation, setDetectingLocation] = useState(false);
 
   // Cargar países disponibles al montar el componente
   useEffect(() => {
     fetchAvailableRegions();
   }, []);
 
+  // Detectar ubicación del usuario cuando tengamos la lista de países
+  useEffect(() => {
+    if (countries.length > 0 && !selectedCountry && !detectingLocation) {
+      detectUserCountry();
+    }
+  }, [countries, selectedCountry]);
+
   const openModal = () => setModalVisible(true);
   const closeModal = () => setModalVisible(false);
+
+  // Detectar el país del usuario basado en su ubicación
+  const detectUserCountry = async () => {
+    try {
+      setDetectingLocation(true);
+      
+      // Solicitar permisos de ubicación
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      
+      if (status !== 'granted') {
+        console.log('Permission to access location was denied');
+        setDetectingLocation(false);
+        return;
+      }
+      
+      // Obtener la ubicación actual
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Low // Precisión baja es suficiente para determinar el país
+      });
+      
+      // Obtener información del país basado en las coordenadas
+      const { latitude, longitude } = location.coords;
+      const regionInfo = await Location.reverseGeocodeAsync({
+        latitude,
+        longitude
+      });
+      
+      if (regionInfo && regionInfo.length > 0) {
+        const countryCode = regionInfo[0].isoCountryCode;
+        
+        if (countryCode) {
+          // Buscar el país en nuestra lista
+          const userCountry = countries.find(country => country.code === countryCode);
+          
+          if (userCountry) {
+            console.log(`Detected user's country: ${userCountry.name} (${userCountry.code})`);
+            onSelectCountry(userCountry);
+            
+            // Cargar proveedores para el país detectado
+            if (onFetchProviders) {
+              await fetchWatchProvidersForCountry(userCountry.code);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error detecting user location:', error);
+    } finally {
+      setDetectingLocation(false);
+    }
+  };
 
   // Obtener regiones disponibles desde la API de TMDB
   const fetchAvailableRegions = async () => {
@@ -170,7 +230,9 @@ export function CountrySelector({
         ) : (
           <View style={styles.placeholder}>
             <Globe size={18} color="#808080" />
-            <Text style={styles.placeholderText}>Select your country</Text>
+            <Text style={styles.placeholderText}>
+              {detectingLocation ? "Detecting your location..." : "Select your country"}
+            </Text>
           </View>
         )}
         <ChevronDown size={20} color="#808080" />
