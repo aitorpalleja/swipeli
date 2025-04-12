@@ -174,30 +174,24 @@ export default function FiltersScreen() {
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+  const [availablePlatforms, setAvailablePlatforms] = useState<StreamingPlatform[]>([]);
+  const [isLoadingPlatforms, setIsLoadingPlatforms] = useState(false);
   
-  // Get platform options based on selected country
-  const getAvailablePlatforms = () => {
-    if (!selectedCountry) return US_STREAMING_PLATFORMS;
-    
-    const countryCode = selectedCountry.code;
-    
-    if (['US', 'CA', 'AU'].includes(countryCode)) {
-      return US_STREAMING_PLATFORMS;
-    }
-    else if (['ES', 'IT', 'FR', 'DE', 'GB'].includes(countryCode)) {
-      return EU_STREAMING_PLATFORMS;
-    }
-    else if (['MX', 'BR'].includes(countryCode)) {
-      return LATAM_STREAMING_PLATFORMS;
-    }
-    
-    // Default to US platforms
-    return US_STREAMING_PLATFORMS;
+  // Handle received platforms from TMDB API
+  const handleFetchProviders = (platforms: StreamingPlatform[], isLoading: boolean) => {
+    // Just set the platforms from the API response, without fallback
+    setAvailablePlatforms(platforms);
+    setIsLoadingPlatforms(isLoading);
   };
   
   // Reset selected platforms when country changes
   useEffect(() => {
     setSelectedPlatforms([]);
+    
+    // Reset available platforms when country changes
+    if (!selectedCountry) {
+      setAvailablePlatforms([]);
+    }
   }, [selectedCountry]);
   
   // Fetch genres from API
@@ -266,16 +260,33 @@ export default function FiltersScreen() {
           <CountrySelector
             selectedCountry={selectedCountry}
             onSelectCountry={setSelectedCountry}
+            onFetchProviders={(platforms, isLoading) => handleFetchProviders(platforms, isLoading)}
           />
         </Animated.View>
 
         <Animated.View entering={FadeInDown.delay(200).duration(600)}>
           <Text style={styles.sectionTitle}>Streaming Platforms</Text>
-          <PlatformSelector
-            platforms={getAvailablePlatforms()}
-            selectedPlatforms={selectedPlatforms}
-            onTogglePlatform={togglePlatform}
-          />
+          {availablePlatforms.length > 0 ? (
+            <PlatformSelector
+              platforms={availablePlatforms}
+              selectedPlatforms={selectedPlatforms}
+              onTogglePlatform={togglePlatform}
+            />
+          ) : selectedCountry ? (
+            <View style={styles.emptyStateContainer}>
+              <Text style={styles.emptyStateText}>
+                {isLoadingPlatforms 
+                  ? "Loading streaming platforms..." 
+                  : "No streaming platforms available for this region"}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.emptyStateContainer}>
+              <Text style={styles.emptyStateText}>
+                Select a country to see available streaming platforms
+              </Text>
+            </View>
+          )}
         </Animated.View>
 
         <Animated.View entering={FadeInDown.delay(300).duration(600)}>
@@ -381,5 +392,18 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  emptyStateContainer: {
+    padding: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 32,
+  },
+  emptyStateText: {
+    color: '#808080',
+    fontSize: 16,
+    textAlign: 'center',
   },
 }); 
