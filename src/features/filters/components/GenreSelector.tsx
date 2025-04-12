@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, Pressable } from 'react-native';
+import { StyleSheet, View, Text, Pressable, ActivityIndicator } from 'react-native';
 import Animated, { FadeInRight } from 'react-native-reanimated';
 import { Genre } from '../../../features/movies/types';
 
@@ -9,13 +9,24 @@ interface GenreSelectorProps {
   genres: GenreItem[];
   selectedGenres: (string | number)[];
   onToggleGenre: (genreId: string | number) => void;
+  isLoading?: boolean;
 }
 
 export function GenreSelector({ 
   genres, 
   selectedGenres, 
-  onToggleGenre 
+  onToggleGenre,
+  isLoading = false
 }: GenreSelectorProps) {
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#E50914" />
+        <Text style={styles.loadingText}>Loading genres...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.genresGrid}>
       {genres.map((genre, index) => {
@@ -75,4 +86,17 @@ const styles = StyleSheet.create({
   genreTextSelected: {
     fontWeight: '600',
   },
+  loadingContainer: {
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  loadingText: {
+    color: '#FFFFFF',
+    marginTop: 12,
+    fontSize: 16,
+  }
 }); 

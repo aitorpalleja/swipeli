@@ -10,150 +10,6 @@ import { CountrySelector, Country } from '../src/features/filters/components/Cou
 import { useMovieGenres } from '../src/features/movies/api/movies';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// Demo data for streaming platforms
-const US_STREAMING_PLATFORMS: StreamingPlatform[] = [
-  {
-    id: 'netflix',
-    name: 'Netflix',
-    image: 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?q=80&w=1000&auto=format&fit=crop',
-    color: '#E50914'
-  },
-  {
-    id: 'prime',
-    name: 'Prime Video',
-    image: 'https://images.unsplash.com/photo-1613053341085-db794820ce43?q=80&w=1000&auto=format&fit=crop',
-    color: '#00A8E1'
-  },
-  {
-    id: 'disney',
-    name: 'Disney+',
-    image: 'https://images.unsplash.com/photo-1604877594191-6f699df1aae7?q=80&w=1000&auto=format&fit=crop',
-    color: '#0063E5'
-  },
-  {
-    id: 'hbo',
-    name: 'HBO Max',
-    image: 'https://images.unsplash.com/photo-1612872087720-bb876e0e2038?q=80&w=1000&auto=format&fit=crop',
-    color: '#5822B4'
-  },
-  {
-    id: 'hulu',
-    name: 'Hulu',
-    image: 'https://images.unsplash.com/photo-1567027757540-7b572280fa22?q=80&w=1000&auto=format&fit=crop',
-    color: '#1CE783'
-  },
-  {
-    id: 'peacock',
-    name: 'Peacock',
-    image: 'https://images.unsplash.com/photo-1585247226801-bc613c441316?q=80&w=1000&auto=format&fit=crop',
-    color: '#001631'
-  },
-  {
-    id: 'paramount',
-    name: 'Paramount+',
-    image: 'https://images.unsplash.com/photo-1640158615573-cd28feb1bf4e?q=80&w=1000&auto=format&fit=crop',
-    color: '#0064FF'
-  },
-  {
-    id: 'apple',
-    name: 'Apple TV+',
-    image: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?q=80&w=1000&auto=format&fit=crop',
-    color: '#000000'
-  }
-];
-
-// European streaming platforms
-const EU_STREAMING_PLATFORMS: StreamingPlatform[] = [
-  {
-    id: 'netflix',
-    name: 'Netflix',
-    image: 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?q=80&w=1000&auto=format&fit=crop',
-    color: '#E50914'
-  },
-  {
-    id: 'prime',
-    name: 'Prime Video',
-    image: 'https://images.unsplash.com/photo-1613053341085-db794820ce43?q=80&w=1000&auto=format&fit=crop',
-    color: '#00A8E1'
-  },
-  {
-    id: 'disney',
-    name: 'Disney+',
-    image: 'https://images.unsplash.com/photo-1604877594191-6f699df1aae7?q=80&w=1000&auto=format&fit=crop',
-    color: '#0063E5'
-  },
-  {
-    id: 'skyshowtime',
-    name: 'SkyShowtime',
-    image: 'https://images.unsplash.com/photo-1612872087720-bb876e0e2038?q=80&w=1000&auto=format&fit=crop',
-    color: '#00ACE8'
-  },
-  {
-    id: 'movistar',
-    name: 'Movistar+',
-    image: 'https://images.unsplash.com/photo-1585247226801-bc613c441316?q=80&w=1000&auto=format&fit=crop',
-    color: '#019DF4'
-  },
-  {
-    id: 'canal',
-    name: 'Canal+',
-    image: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?q=80&w=1000&auto=format&fit=crop',
-    color: '#000000'
-  },
-  {
-    id: 'now',
-    name: 'NOW TV',
-    image: 'https://images.unsplash.com/photo-1567027757540-7b572280fa22?q=80&w=1000&auto=format&fit=crop',
-    color: '#02B9EF'
-  }
-];
-
-// Latin America streaming platforms
-const LATAM_STREAMING_PLATFORMS: StreamingPlatform[] = [
-  {
-    id: 'netflix',
-    name: 'Netflix',
-    image: 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?q=80&w=1000&auto=format&fit=crop',
-    color: '#E50914'
-  },
-  {
-    id: 'prime',
-    name: 'Prime Video',
-    image: 'https://images.unsplash.com/photo-1613053341085-db794820ce43?q=80&w=1000&auto=format&fit=crop',
-    color: '#00A8E1'
-  },
-  {
-    id: 'disney',
-    name: 'Disney+',
-    image: 'https://images.unsplash.com/photo-1604877594191-6f699df1aae7?q=80&w=1000&auto=format&fit=crop',
-    color: '#0063E5'
-  },
-  {
-    id: 'clarovideo',
-    name: 'Claro Video',
-    image: 'https://images.unsplash.com/photo-1612872087720-bb876e0e2038?q=80&w=1000&auto=format&fit=crop',
-    color: '#E21836'
-  },
-  {
-    id: 'globoplay',
-    name: 'Globoplay',
-    image: 'https://images.unsplash.com/photo-1585247226801-bc613c441316?q=80&w=1000&auto=format&fit=crop',
-    color: '#FB8200'
-  },
-  {
-    id: 'telecine',
-    name: 'Telecine Play',
-    image: 'https://images.unsplash.com/photo-1640158615573-cd28feb1bf4e?q=80&w=1000&auto=format&fit=crop',
-    color: '#E4002B'
-  },
-  {
-    id: 'hbogo',
-    name: 'HBO Go',
-    image: 'https://images.unsplash.com/photo-1567027757540-7b572280fa22?q=80&w=1000&auto=format&fit=crop',
-    color: '#5822B4'
-  }
-];
-
 // Demo data for initial genres (used as fallback if API fails)
 const FALLBACK_GENRES = [
   { id: 28, name: 'Action' },
@@ -179,7 +35,6 @@ export default function FiltersScreen() {
   
   // Handle received platforms from TMDB API
   const handleFetchProviders = (platforms: StreamingPlatform[], isLoading: boolean) => {
-    // Just set the platforms from the API response, without fallback
     setAvailablePlatforms(platforms);
     setIsLoadingPlatforms(isLoading);
   };
@@ -208,11 +63,14 @@ export default function FiltersScreen() {
   };
 
   // Toggle genre selection
-  const toggleGenre = (genreId: number) => {
+  const toggleGenre = (genreId: string | number) => {
+    // Ensure genreId is a number
+    const numericId = typeof genreId === 'string' ? parseInt(genreId, 10) : genreId;
+    
     setSelectedGenres(current =>
-      current.includes(genreId)
-        ? current.filter(id => id !== genreId)
-        : [...current, genreId]
+      current.includes(numericId)
+        ? current.filter(id => id !== numericId)
+        : [...current, numericId]
     );
   };
 
@@ -248,74 +106,76 @@ export default function FiltersScreen() {
         </View>
         
         <View style={styles.header}>
-          <Filter color={theme.colors.primary} size={32} />
-          <Text style={styles.title}>Customize Your Experience</Text>
-          <Text style={styles.subtitle}>Select your preferred streaming platforms and genres</Text>
+          <Filter color="#FFFFFF" size={24} />
+          <Text style={styles.title}>Filters</Text>
         </View>
 
-        <Animated.View entering={FadeInDown.delay(100).duration(600)}>
-          <Text style={styles.sectionTitle}>
-            <Globe size={20} color={theme.colors.primary} style={styles.sectionIcon} /> Your Region
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Choose your country</Text>
+          <Text style={styles.sectionDescription}>
+            We'll show you content available in your region
           </Text>
+          
           <CountrySelector
             selectedCountry={selectedCountry}
             onSelectCountry={setSelectedCountry}
-            onFetchProviders={(platforms, isLoading) => handleFetchProviders(platforms, isLoading)}
+            onFetchProviders={handleFetchProviders}
           />
-        </Animated.View>
-
-        <Animated.View entering={FadeInDown.delay(200).duration(600)}>
-          <Text style={styles.sectionTitle}>Streaming Platforms</Text>
-          {availablePlatforms.length > 0 ? (
-            <PlatformSelector
+        </View>
+        
+        {selectedCountry && (
+          <Animated.View 
+            style={styles.section}
+            entering={FadeInDown.duration(500).delay(200)}
+          >
+            <Text style={styles.sectionTitle}>Streaming platforms</Text>
+            <Text style={styles.sectionDescription}>
+              Select where you have active subscriptions
+            </Text>
+            
+            <PlatformSelector 
               platforms={availablePlatforms}
               selectedPlatforms={selectedPlatforms}
               onTogglePlatform={togglePlatform}
+              isLoading={isLoadingPlatforms}
             />
-          ) : selectedCountry ? (
-            <View style={styles.emptyStateContainer}>
-              <Text style={styles.emptyStateText}>
-                {isLoadingPlatforms 
-                  ? "Loading streaming platforms..." 
-                  : "No streaming platforms available for this region"}
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.emptyStateContainer}>
-              <Text style={styles.emptyStateText}>
-                Select a country to see available streaming platforms
-              </Text>
-            </View>
-          )}
-        </Animated.View>
-
-        <Animated.View entering={FadeInDown.delay(300).duration(600)}>
-          <Text style={styles.sectionTitle}>Genres</Text>
-          <GenreSelector
-            genres={availableGenres}
-            selectedGenres={selectedGenres}
-            onToggleGenre={(id) => toggleGenre(Number(id))}
-          />
-        </Animated.View>
-
-        <Animated.View 
-          style={styles.statsContainer}
-          entering={FadeInDown.delay(400).duration(600)}
-        >
-          <Text style={styles.statsText}>
-            {selectedPlatforms.length === 0 && selectedGenres.length === 0 
-              ? 'No filters selected • Show latest movies' 
-              : `${selectedPlatforms.length} platforms • ${selectedGenres.length} genres selected`}
-            {selectedCountry && ` • ${selectedCountry.name}`}
-          </Text>
-          <Pressable 
-            style={styles.continueButton}
-            onPress={handleContinue}
+          </Animated.View>
+        )}
+        
+        {selectedCountry && (
+          <Animated.View 
+            style={styles.section}
+            entering={FadeInDown.duration(500).delay(300)}
           >
-            <Text style={styles.continueButtonText}>Continue</Text>
+            <Text style={styles.sectionTitle}>Genres</Text>
+            <Text style={styles.sectionDescription}>
+              Select genres you're interested in
+            </Text>
+            
+            <GenreSelector 
+              genres={availableGenres}
+              selectedGenres={selectedGenres}
+              onToggleGenre={toggleGenre}
+              isLoading={isLoadingGenres}
+            />
+          </Animated.View>
+        )}
+        
+        <View style={styles.buttonContainer}>
+          <Pressable 
+            style={[
+              styles.continueButton,
+              selectedCountry ? styles.continueButtonActive : {}
+            ]}
+            onPress={handleContinue}
+            disabled={!selectedCountry}
+          >
+            <Text style={styles.continueButtonText}>
+              Continue to Movie Swipe
+            </Text>
             <ArrowRight color="#FFFFFF" size={20} />
           </Pressable>
-        </Animated.View>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -330,6 +190,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
+    paddingBottom: 40,
   },
   backButtonContainer: {
     marginBottom: 16,
@@ -338,72 +199,54 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   header: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 30,
   },
   title: {
+    color: '#FFFFFF',
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginTop: 16,
-    marginBottom: 8,
-    textAlign: 'center',
+    marginLeft: 12,
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#808080',
-    textAlign: 'center',
+  section: {
+    marginBottom: 30,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
     color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  sectionDescription: {
+    color: '#AAAAAA',
+    fontSize: 16,
     marginBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
   },
-  sectionIcon: {
-    marginRight: 8,
-  },
-  statsContainer: {
-    alignItems: 'center',
+  buttonContainer: {
     marginTop: 20,
   },
-  statsText: {
-    fontSize: 16,
-    color: '#808080',
-    marginBottom: 16,
-  },
   continueButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  continueButtonActive: {
     backgroundColor: '#E50914',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 30,
-    gap: 8,
   },
   continueButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
-  },
-  emptyStateContainer: {
-    padding: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 32,
-  },
-  emptyStateText: {
-    color: '#808080',
-    fontSize: 16,
-    textAlign: 'center',
+    fontWeight: 'bold',
+    marginRight: 12,
   },
 }); 

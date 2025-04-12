@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, Pressable, Image, ScrollView, Modal } from 'react-native';
+import { StyleSheet, View, Text, Pressable, Image, ScrollView, Modal, ActivityIndicator } from 'react-native';
 import { Search, X, Check, Globe, ChevronDown } from 'lucide-react-native';
 import { useState, useEffect } from 'react';
 import { fetcher } from '../../../lib/api/client';
@@ -11,23 +11,6 @@ export interface Country {
   flag: string;
 }
 
-// Lista de países principales con códigos de región para servicios de streaming
-const COUNTRIES: Country[] = [
-  { code: 'US', name: 'United States', flag: 'https://flagcdn.com/w80/us.png' },
-  { code: 'GB', name: 'United Kingdom', flag: 'https://flagcdn.com/w80/gb.png' },
-  { code: 'CA', name: 'Canada', flag: 'https://flagcdn.com/w80/ca.png' },
-  { code: 'ES', name: 'Spain', flag: 'https://flagcdn.com/w80/es.png' },
-  { code: 'MX', name: 'Mexico', flag: 'https://flagcdn.com/w80/mx.png' },
-  { code: 'FR', name: 'France', flag: 'https://flagcdn.com/w80/fr.png' },
-  { code: 'DE', name: 'Germany', flag: 'https://flagcdn.com/w80/de.png' },
-  { code: 'IT', name: 'Italy', flag: 'https://flagcdn.com/w80/it.png' },
-  { code: 'BR', name: 'Brazil', flag: 'https://flagcdn.com/w80/br.png' },
-  { code: 'AU', name: 'Australia', flag: 'https://flagcdn.com/w80/au.png' },
-  { code: 'JP', name: 'Japan', flag: 'https://flagcdn.com/w80/jp.png' },
-  { code: 'KR', name: 'South Korea', flag: 'https://flagcdn.com/w80/kr.png' },
-  { code: 'IN', name: 'India', flag: 'https://flagcdn.com/w80/in.png' },
-];
-
 // Interfaz para las respuestas de TMDB Watch Providers
 interface Provider {
   provider_id: number;
@@ -37,6 +20,15 @@ interface Provider {
 
 interface WatchProvidersResponse {
   results: Provider[];
+}
+
+// Interfaz para la respuesta de regiones de TMDB
+interface RegionsResponse {
+  results: {
+    iso_3166_1: string;
+    english_name: string;
+    native_name: string;
+  }[];
 }
 
 interface CountrySelectorProps {
@@ -51,9 +43,46 @@ export function CountrySelector({
   onFetchProviders
 }: CountrySelectorProps) {
   const [modalVisible, setModalVisible] = useState(false);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [loadingCountries, setLoadingCountries] = useState(false);
+
+  // Cargar países disponibles al montar el componente
+  useEffect(() => {
+    fetchAvailableRegions();
+  }, []);
 
   const openModal = () => setModalVisible(true);
   const closeModal = () => setModalVisible(false);
+
+  // Obtener regiones disponibles desde la API de TMDB
+  const fetchAvailableRegions = async () => {
+    try {
+      setLoadingCountries(true);
+      
+      const response = await fetcher<RegionsResponse>(
+        `/watch/providers/regions`
+      );
+      
+      if (response && response.results) {
+        // Transformar las regiones en formato Country
+        const transformedCountries: Country[] = response.results.map(region => ({
+          code: region.iso_3166_1,
+          name: region.english_name,
+          flag: `https://flagcdn.com/w80/${region.iso_3166_1.toLowerCase()}.png`
+        }));
+        
+        // Ordenar alfabéticamente por nombre
+        transformedCountries.sort((a, b) => a.name.localeCompare(b.name));
+        
+        setCountries(transformedCountries);
+        console.log(`Loaded ${transformedCountries.length} regions from TMDB`);
+      }
+    } catch (error) {
+      console.error('Error fetching available regions:', error);
+    } finally {
+      setLoadingCountries(false);
+    }
+  };
 
   const handleSelectCountry = async (country: Country) => {
     onSelectCountry(country);
@@ -74,31 +103,16 @@ export function CountrySelector({
       }
       
       // Call to TMDB API to get watch providers available for a specific region
-      // El endpoint correcto para listar todos los proveedores de streaming para películas
       const response = await fetcher<any>(
-        `/watch/providers/movie`
+        `/watch/providers/movie?watch_region=${countryCode}`
       );
       
       // Log para depuración
       console.log(`TMDB providers response for ${countryCode}:`, response);
       
       if (response && response.results && onFetchProviders) {
-        // Filtrar proveedores que están disponibles en el país seleccionado
-        // La estructura de la respuesta es diferente a lo que esperábamos
-        // Cada proveedor tiene una propiedad 'display_priorities' que contiene los países donde está disponible
-        const countryProviders = response.results.filter(
-          (provider: any) => provider.display_priorities && 
-                            provider.display_priorities[countryCode] !== undefined
-        );
-        
-        // Ordenar por prioridad en ese país (los más populares primero)
-        countryProviders.sort((a: any, b: any) => 
-          (a.display_priorities[countryCode] || 999) - 
-          (b.display_priorities[countryCode] || 999)
-        );
-        
         // Convertir a nuestro formato de StreamingPlatform
-        const platforms: StreamingPlatform[] = countryProviders
+        const platforms: StreamingPlatform[] = response.results
           .slice(0, 20) // Limitar a 20 proveedores 
           .map((provider: any) => ({
             id: provider.provider_id.toString(),
@@ -177,21 +191,28 @@ export function CountrySelector({
               </Pressable>
             </View>
 
-            <ScrollView style={styles.countriesList}>
-              {COUNTRIES.map(country => (
-                <Pressable
-                  key={country.code}
-                  style={styles.countryItem}
-                  onPress={() => handleSelectCountry(country)}
-                >
-                  <Image source={{ uri: country.flag }} style={styles.flag} />
-                  <Text style={styles.countryName}>{country.name}</Text>
-                  {selectedCountry?.code === country.code && (
-                    <Check size={20} color="#E50914" />
-                  )}
-                </Pressable>
-              ))}
-            </ScrollView>
+            {loadingCountries ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#E50914" />
+                <Text style={styles.loadingText}>Loading countries...</Text>
+              </View>
+            ) : (
+              <ScrollView style={styles.countriesList}>
+                {countries.map(country => (
+                  <Pressable
+                    key={country.code}
+                    style={styles.countryItem}
+                    onPress={() => handleSelectCountry(country)}
+                  >
+                    <Image source={{ uri: country.flag }} style={styles.flag} />
+                    <Text style={styles.countryName}>{country.name}</Text>
+                    {selectedCountry?.code === country.code && (
+                      <Check size={20} color="#E50914" />
+                    )}
+                  </Pressable>
+                ))}
+              </ScrollView>
+            )}
           </View>
         </View>
       </Modal>
@@ -248,33 +269,33 @@ const styles = StyleSheet.create({
   },
   modalHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-    padding: 16,
   },
   modalTitle: {
     color: '#FFFFFF',
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: 'bold',
   },
   closeButton: {
     padding: 4,
   },
   countriesList: {
-    maxHeight: 500,
+    padding: 16,
   },
   countryItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   flag: {
     width: 30,
-    height: 20,
+    height: 22,
     borderRadius: 2,
     marginRight: 16,
   },
@@ -283,4 +304,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     flex: 1,
   },
+  loadingContainer: {
+    padding: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    color: '#FFFFFF',
+    marginTop: 16,
+    fontSize: 16,
+  }
 }); 

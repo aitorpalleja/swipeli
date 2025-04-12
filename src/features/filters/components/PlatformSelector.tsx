@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, Image, Pressable, Dimensions, Modal, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, Image, Pressable, Dimensions, Modal, ScrollView, ActivityIndicator } from 'react-native';
 import { Check, X, Plus } from 'lucide-react-native';
 import Animated, { FadeInRight } from 'react-native-reanimated';
 
@@ -17,12 +17,14 @@ interface PlatformSelectorProps {
   platforms: StreamingPlatform[];
   selectedPlatforms: string[];
   onTogglePlatform: (platformId: string) => void;
+  isLoading?: boolean;
 }
 
 export function PlatformSelector({ 
   platforms, 
   selectedPlatforms, 
-  onTogglePlatform 
+  onTogglePlatform,
+  isLoading = false
 }: PlatformSelectorProps) {
   const [modalVisible, setModalVisible] = useState(false);
   
@@ -60,6 +62,25 @@ export function PlatformSelector({
       </Pressable>
     </Animated.View>
   );
+  
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#E50914" />
+        <Text style={styles.loadingText}>Loading streaming platforms...</Text>
+      </View>
+    );
+  }
+  
+  if (platforms.length === 0) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>
+          No streaming platforms available for this region
+        </Text>
+      </View>
+    );
+  }
   
   return (
     <View>
@@ -221,6 +242,32 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginTop: 4,
   },
+  loadingContainer: {
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  loadingText: {
+    color: '#FFFFFF',
+    marginTop: 12,
+    fontSize: 16,
+  },
+  emptyContainer: {
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  emptyText: {
+    color: '#AAAAAA',
+    fontSize: 16,
+    textAlign: 'center',
+  },
   modalContainer: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -257,8 +304,7 @@ const styles = StyleSheet.create({
   },
   doneButton: {
     backgroundColor: '#E50914',
-    marginHorizontal: 16,
-    marginTop: 16,
+    margin: 16,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
